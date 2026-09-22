@@ -8,7 +8,13 @@ You operate one experimental energy core for **20 turns**. Each turn you choose 
 
 ## Screenshot
 
-![Core Control v1.0 gameplay screenshot](assets/core-control-v1.0-ui.png)
+<p align="center">
+  <img src="assets/core-control-v1.0-ui.png" width="900">
+</p>
+
+<p align="center">
+  <em>Gameplay screenshot of Core Control v1.0.</em>
+</p>
 
 ## What makes this version different?
 
@@ -22,14 +28,7 @@ The distribution is **not reinitialized each turn**. Your actions influence the 
 
 The runtime evolves
 
-$$
-\frac{\partial f}{\partial t}
-=
-\frac{\partial}{\partial v}
-\left[D(v)\frac{\partial f}{\partial v}\right]
-+
-\nu_{\rm coll}\left(f_{\rm eq}-f\right),
-$$
+$$\frac{\partial f}{\partial t}=\frac{\partial}{\partial v}\left[D(v)\frac{\partial f}{\partial v}\right]+\nu_{\rm coll}\left(f_{\rm eq}-f\right),$$
 
 with
 
