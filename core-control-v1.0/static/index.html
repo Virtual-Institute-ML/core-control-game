@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Core Control v1.0</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div class="brand-kicker">VIML · EXPERIMENTAL ENERGY FACILITY</div>
+        <h1>CORE CONTROL</h1>
+        <p>Push the reactor. Protect the core. Set the highest 20-turn power record you can survive.</p>
+      </div>
+      <button id="newRun" class="ghost-button">New Run</button>
+    </header>
+
+    <section id="startPanel" class="start-screen panel">
+      <div class="start-copy">
+        <div class="eyebrow">20-TURN HIGH-SCORE RUN</div>
+        <h2>How much power can you make without losing the core?</h2>
+        <p>Every turn, choose an output level and one control action. HIGH makes more power, but consecutive HIGH turns build CORE LOAD and weaken your controls. Drop to NORMAL or LOW before the reactor runs away. If Integrity reaches zero before Turn 20, the run is invalid and no record is saved.</p>
+      </div>
+
+      <div class="quick-rule-grid">
+        <div class="quick-rule"><b>1</b><span><strong>Choose output</strong><small>LOW · NORMAL · HIGH</small></span></div>
+        <div class="quick-rule"><b>2</b><span><strong>Manage Core Load</strong><small>HIGH builds it · NORMAL bleeds it · LOW clears it</small></span></div>
+        <div class="quick-rule"><b>3</b><span><strong>Survive all 20 turns</strong><small>Failure = no official record</small></span></div>
+        <div class="quick-rule"><b>4</b><span><strong>Beat your best Power</strong><small>Take risks when you can afford them</small></span></div>
+      </div>
+
+      <div class="win-card">
+        <div><span>WIN CONDITION</span><strong>Survive Turn 20</strong></div>
+        <div><span>OFFICIAL RECORD</span><strong>Total Power</strong></div>
+        <div><span>CURRENT PERSONAL BEST</span><strong id="startPB">—</strong></div>
+      </div>
+
+      <button id="startRun" class="primary big">START REACTOR</button>
+    </section>
+
+    <section id="game" class="hidden">
+      <div class="turn-header">
+        <div class="turn-copy">
+          <span id="turnLabel">TURN 1 / 20</span>
+          <strong id="eventTitle">STEADY SHIFT</strong>
+          <small id="eventDescription">Conditions are normal.</small>
+        </div>
+        <div id="eventTag" class="event-tag">CALM</div>
+      </div>
+      <div id="turnTrack" class="turn-track"></div>
+
+      <section class="power-strip panel">
+        <div class="power-total">
+          <span>TOTAL POWER</span>
+          <strong><b id="powerGenerated">0</b> <small>MW</small></strong>
+        </div>
+        <div class="pb-box">
+          <span>PERSONAL BEST</span>
+          <strong id="personalBest">—</strong>
+          <small id="pbHint">Finish all 20 turns to set a record.</small>
+        </div>
+        <div class="resource-pills">
+          <div><span>🔋 BATTERY</span><strong id="battery">100</strong></div>
+          <div><span>🧱 INTEGRITY</span><strong id="integrity">100</strong></div>
+        </div>
+      </section>
+
+      <div class="game-grid">
+        <section class="reactor-panel panel">
+          <div class="reactor-stage">
+            <div id="coreVisual" class="core-visual">
+              <div class="ring r1"></div>
+              <div class="ring r2"></div>
+              <div id="coreOrb" class="core-orb"><span>CORE</span></div>
+            </div>
+
+            <div class="danger-stack">
+              <div class="danger-meter heat">
+                <div><span>🔥 HEAT</span><strong id="heatValue">28%</strong></div>
+                <div class="bar"><i id="heatBar"></i><mark class="danger-line"></mark></div>
+                <small id="heatHint">Comfortable</small>
+              </div>
+              <div class="danger-meter stress">
+                <div><span>⚠ STRESS</span><strong id="stressValue">22%</strong></div>
+                <div class="bar"><i id="stressBar"></i><mark class="danger-line"></mark></div>
+                <small id="stressHint">Comfortable</small>
+              </div>
+              <div class="load-meter">
+                <div><span>⚡ CORE LOAD</span><strong id="loadValue">0 / 6</strong></div>
+                <div id="loadSegments" class="load-segments" aria-label="Core load"></div>
+                <small id="loadHint">Ready to push</small>
+              </div>
+              <div class="red-zone-note">HIGH builds Core Load and makes COOL / STABILIZE less effective. NORMAL lowers Load by 1; LOW clears it and recovers 3 Battery. HEAT and STRESS above 80% cause sharply increasing damage.</div>
+            </div>
+          </div>
+
+          <div id="forecastBox" class="forecast-box">
+            <span>◌</span>
+            <div><small>NEXT TURN</small><strong id="forecastTitle">Scanning...</strong><em id="forecastTag"></em></div>
+          </div>
+
+          <details class="analysis-panel">
+            <summary>Advanced science view</summary>
+            <p>The same distribution f(v) is advanced from turn to turn by the VIML Chang–Cooper Fokker–Planck solver. This graph is optional; you do not need it to play.</p>
+            <div class="analysis-legend"><span><i class="line current"></i>Resolved core</span><span><i class="line normal"></i>Normal reference</span></div>
+            <svg viewBox="0 0 740 300" role="img" aria-label="Fokker Planck distribution">
+              <line class="axis" x1="45" y1="260" x2="715" y2="260"></line>
+              <line class="axis dashed" x1="380" y1="28" x2="380" y2="260"></line>
+              <path id="normalPath" class="normal-path"></path>
+              <path id="currentPath" class="current-path"></path>
+            </svg>
+          </details>
+        </section>
+
+        <aside class="control-panel panel">
+          <div class="step-label">STEP 1</div>
+          <h2>Choose reactor output</h2>
+          <div id="outputs" class="output-grid"></div>
+
+          <div class="step-label second">STEP 2</div>
+          <h2>Choose one control</h2>
+          <div id="controls" class="control-grid"></div>
+
+          <button id="runReactor" class="primary run-button" disabled>CHOOSE OUTPUT + CONTROL</button>
+
+          <div id="resultCard" class="result-card">
+            <span>READY</span>
+            <strong>Take a safe turn — or push harder for the record.</strong>
+          </div>
+
+          <button id="nextTurn" class="primary next-button hidden">NEXT TURN</button>
+        </aside>
+      </div>
+
+      <section id="ownedUpgrades" class="owned-upgrades panel hidden">
+        <div class="eyebrow">INSTALLED UPGRADES</div>
+        <div id="upgradeBadges" class="upgrade-badges"></div>
+      </section>
+    </section>
+
+    <section id="upgradePanel" class="upgrade-panel panel hidden">
+      <div class="eyebrow">SYSTEM UPGRADE</div>
+      <h2>Choose one improvement.</h2>
+      <p>Permanent for the rest of this run. Your build can favor safety, battery efficiency, or raw Power.</p>
+      <div id="upgradeChoices" class="upgrade-choice-grid"></div>
+    </section>
+
+    <section id="endPanel" class="end-panel panel hidden">
+      <div id="endEyebrow" class="eyebrow">RUN COMPLETE</div>
+      <h2 id="endTitle">Reactor survived.</h2>
+      <p id="endSummary"></p>
+      <div class="score-breakdown">
+        <div><span>TOTAL POWER</span><strong id="endPower">0 MW</strong></div>
+        <div><span>INTEGRITY</span><strong id="endIntegrity">0</strong></div>
+        <div><span>BATTERY</span><strong id="endBattery">0</strong></div>
+      </div>
+      <div id="recordMessage" class="record-message"></div>
+      <button id="playAgain" class="primary big">PLAY AGAIN</button>
+    </section>
+
+    <section class="records panel">
+      <div><div class="eyebrow">SUCCESSFUL RUNS ONLY</div><h2>Power Records</h2><p class="records-note">A run that fails before Turn 20 is never added here.</p></div>
+      <div id="recordList" class="record-list"></div>
+    </section>
+
+    <footer>Core Control v1.0 · Survive 20 turns and maximize Power. One persistent f(v) is evolved through all 20 turns by the VIML Fokker–Planck solver.</footer>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
